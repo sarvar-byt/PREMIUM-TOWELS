@@ -10,7 +10,8 @@
             --primary-dark: #111111;
             --accent-yellow: #f1c40f;
             --bg-color: #f4f4f4;
-            --input-focus-gold: #f39c12; /* Telefon uchun fokus rangi */
+            --input-focus-gold: #f39c12;
+            --card-hint-red: #e74c3c; /* Kichik yozuv rangi */
         }
 
         body {
@@ -127,7 +128,7 @@
             gap: 30px;
         }
 
-        /* RANGLAR */
+        /* RANGLAR BO'LIMI */
         .products-section {
             flex: 1;
             background: white;
@@ -163,11 +164,39 @@
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
+            flex-direction: column; /* Elementlarni pastga tushirish uchun */
             align-items: center;
             justify-content: center;
             font-weight: bold;
             font-size: 1rem;
             box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            position: relative;
+            padding-bottom: 5px; /* Pastki joy */
+        }
+
+        /* KICHIK QIZIL YOZUV (HINT) - DASTLAB YASHIRIN */
+        .card-hint {
+            font-size: 0.7rem;
+            color: var(--card-hint-red); /* Qizil rang */
+            margin-top: 5px;
+            opacity: 0; /* Ko'rinmas */
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(5px);
+            pointer-events: none;
+            font-weight: bold;
+        }
+
+        /* TANLANGANDA KORSATISH */
+        .fabric-sample.selected .card-hint {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* TANLANGAN RANGNI AJRATIB TURUVCHI CHEGARA */
+        .fabric-sample.selected {
+            border: 3px solid var(--input-focus-gold);
+            transform: translateY(-5px); /* Butun kartochka biroz ko'tariladi */
+            box-shadow: 0 10px 25px rgba(243, 156, 18, 0.4);
         }
 
         .fabric-sample.white-fabric { background-color: #ffffff; border: 1px solid #e0e0e0; color: #333; }
@@ -206,13 +235,13 @@
             box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
         }
 
-        /* TELEFON UCHUN MAXSUS TANLASH EFFEKTI */
+        /* TELEFON UCHUN TANLASH EFFEKTI */
         #phone:focus {
             border-color: var(--input-focus-gold);
-            box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.2); /* Tilla rangda yorug'lik */
+            box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.2); 
         }
 
-        /* MIQDOR QISMI UCHUN STIL */
+        /* MIQDOR QISMI */
         .quantity-wrapper {
             position: relative;
         }
@@ -220,9 +249,9 @@
         .min-hint {
             position: absolute;
             right: 0;
-            top: -25px; /* Label ustiga chiqib turadi */
+            top: -25px; 
             font-size: 0.75rem;
-            color: #e74c3c; /* Qizil rang */
+            color: #e74c3c; 
             font-weight: bold;
             pointer-events: none;
         }
@@ -320,8 +349,19 @@
             <p class="section-subtitle">BIZDA FAQAT ENG YAXSHISI VA SIFATLISI</p>
             
             <ul class="color-list">
-                <li class="fabric-sample white-fabric" onclick="selectColor('Oq')">OQ</li>
-                <li class="fabric-sample black-fabric" onclick="selectColor('Qora')">QORA</li>
+                <!-- KARTICHKA 1 -->
+                <li class="fabric-sample white-fabric" onclick="selectColor('Oq')">
+                    <span class="card-text">OQ</span>
+                    <!-- KICHIK QIZIL YOZUV -->
+                    <span class="card-hint">Pastga tushing</span>
+                </li>
+                
+                <!-- KARTICHKA 2 -->
+                <li class="fabric-sample black-fabric" onclick="selectColor('Qora')">
+                    <span class="card-text">QORA</span>
+                    <!-- KICHIK QIZIL YOZUV -->
+                    <span class="card-hint">Pastga tushing</span>
+                </li>
             </ul>
         </section>
 
@@ -340,14 +380,14 @@
                 <label for="location">Yetkazib berish manzili:</label>
                 <input type="text" id="location" placeholder="Manzilni kiriting..." required>
 
-                <!-- MIQDOR BO'LIMI (O'ZGARTIRILGAN) -->
+                <!-- MIQDOR -->
                 <label for="quantity">Nechta kerak:</label>
                 <div class="quantity-wrapper">
                     <input type="number" id="quantity" min="20" max="200" placeholder="Masalan: 50" required>
-                    <!-- KICHIK QIZIL YOZUV -->
                     <span class="min-hint">Eng kami 20 ta</span>
                 </div>
 
+                <!-- RANG TANLASH (SELECT) -->
                 <label for="color">Rangni tanlang:</label>
                 <select id="color" required>
                     <option value="" disabled selected>-- Tanlang --</option>
@@ -378,7 +418,21 @@
         // Rangni tanlash funksiyasi
         function selectColor(colorName) {
             const selectBox = document.getElementById('color');
-            selectBox.value = colorName;
+            selectBox.value = colorName; 
+
+            // Vizual effekt
+            const samples = document.querySelectorAll('.fabric-sample');
+            
+            samples.forEach(sample => {
+                sample.classList.remove('selected'); // Barchadan tanlovni olib tashlash
+            });
+            
+            // Bosilgan elementni aniqlash
+            const clickedSample = Array.from(samples).find(s => s.querySelector('.card-text').innerText.toUpperCase() === colorName.toUpperCase());
+            
+            if(clickedSample) {
+                clickedSample.classList.add('selected'); // Tanlanganni belgilash (bu paytda 'Pastga tushing' degan yozuv chiqadi)
+            }
         }
 
         // Telegramga yuborish funksiyasi
@@ -427,6 +481,8 @@
                 if (response.ok) {
                     alert("Rahmat! Buyurtmangiz muvaffaqiyatli qabul qilindi.");
                     document.getElementById('orderForm').reset();
+                    // Formani tozalaganda tanlovni ham qaytarish
+                    document.querySelectorAll('.fabric-sample').forEach(s => s.classList.remove('selected'));
                 } else {
                     alert("Xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring.");
                 }
